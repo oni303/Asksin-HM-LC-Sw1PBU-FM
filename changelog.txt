@@ -141,3 +141,8 @@ power saving. This mode should be prefered for battery powered switches.
 
 Another rework on the power saving function. Power mode 3 and 4 is now really in deep sleep and therefore the power 
 consumption whils sleeping is < 1 uA.
+
+27.12.2013
+- add quirks for Atmega 644
+- change ports for M-LC-Sw1PBU-FM
+- change interrupt handlers
