@@ -355,7 +355,7 @@ void HM::init() {																// starts also the send/receive class for the r
 	initRegisters();															// init the storage management module
 	setPowerMode(0);															// set default power mode of HM device
 	delay(100);																	// otherwise we get a problem with serial console
-	enableIRQ_GDO0();															// attach callback function for GDO0 (INT0)
+	enableIRQ_GDO0();															// attach function for GDO0 (INT0)
 }
 void HM::poll() {																// task scheduler
 	if (recv.data[0] > 0) recv_poll();											// trace the received string and decide what to do further
@@ -1393,6 +1393,7 @@ void    HM::initRegisters() {
 	mainSettings(&regPtr,&peerPtr);
 	eeprom_write_block((const void*)regPtr,(void*)&ee->regs,sizeof(ee->regs));
 	eeprom_write_block((const void*)peerPtr,(void*)&ee->peerdb,sizeof(ee->peerdb));
+        Serial << F("Loading EEPROM") << '\n';
 	#endif
 
 	// read the peer database back 
@@ -1836,15 +1837,15 @@ void BK::config(uint8_t tIdx, uint8_t tPin, uint16_t tTimeOutShortDbl, uint16_t 
 	*pcmsk |= (1 << digitalPinToPCMSKbit(tPin));
 
 	// load the respective pin register to mask out in interrupt routine
-	uint8_t pinPort = digitalPinToPort(tPin)-2;									// get the respective port to the given pin
-	pci.lPort[pinPort] = *portInputRegister(pinPort+2) & *pcmsk;				// store the port input byte for later comparison
-	pci.pAddr[pinPort] = (uint8_t*)portInputRegister(pinPort+2);				// store the address of the port input register to avoid PGM read in the interrupt
+	uint8_t pinPort = digitalPinToPort(tPin) - 1;									// get the respective port to the given pin
+	pci.lPort[pinPort] = *portInputRegister(pinPort + 1) & *pcmsk;				// store the port input byte for later comparison
+	pci.pAddr[pinPort] = (uint8_t*)portInputRegister(pinPort + 1);				// store the address of the port input register to avoid PGM read in the interrupt
 	
 	// set index and call back address for interrupt handling
 	idx = tIdx;																	// set the index in the interrupt array
 	pci.ptr[idx] = this;														// set the call back address
 	pci.idx[idx] = (pinPort << 8) + (1 << digitalPinToPCMSKbit(tPin));			// calculate and set the index number for faster finding in the interrupt routine
-	//Serial << "pin:" << tPin << ", idx:" << pci.idx[pci.nbr] << ", prt:" << pinPort << ", msk:" << (1 << digitalPinToPCMSKbit(tPin)) << '\n';
+	Serial << "pin:" << tPin << ", idx:" << pci.idx[pci.nbr] << ", prt:" << pinPort << ", msk:" << (1 << digitalPinToPCMSKbit(tPin)) << '\n';
 }
 void BK::poll() {
 	for (uint8_t i = 0; i < maxInt; i++) {
@@ -2122,22 +2123,23 @@ void pcInt(uint8_t iPort) {
 	if (iPort == 0) pcMskByte = PCMSK0;
 	if (iPort == 1) pcMskByte = PCMSK1;
 	if (iPort == 2) pcMskByte = PCMSK2;
+	if (iPort == 3) pcMskByte = PCMSK3;
+
+        Serial << F("pcInt: port=") << iPort << '\n';
 
 	// find the changed pin by getting the pin states for the indicated port, comparing with the stored byte of the port and setting the port byte for the next try
 	uint8_t cur = *pci.pAddr[iPort] & pcMskByte;								// get the input byte
 	uint8_t msk = pci.lPort[iPort]^cur;											// mask out the changes
 	if (!msk) { sei(); return; }												// end while nothing had changed
 	
-	
-	
-	//Serial << "cur:" << cur << ", lst:" << pci.lPort[iPort] << ", msk:" << msk << ", mbt:" << pcMskByte << '\n';
+	Serial << "cur:" << cur << ", lst:" << pci.lPort[iPort] << ", msk:" << msk << ", mbt:" << pcMskByte << '\n';
 	pci.lPort[iPort] = cur;														// store the latest port reading
 
 	// finding the respective instance of BK by searching for the changed bit
 	uint16_t tFnd = (iPort << 8) + msk;											// construct search mask
 	for (uint8_t i = 0; i < maxInt; i++) {
 		if (tFnd == pci.idx[i]) {												// found; write flag and time in the respective button key class
-			//Serial << i << ", cs:" << ((cur & msk)?1:0) << '\n';
+			Serial << i << ", cs:" << ((cur & msk)?1:0) << '\n';
 			BK *p = pci.ptr[i];
 			p->cStat = (cur & msk)?1:0;											// setting the pin status
 			p->cTime = millis() + 50;											// for debouncing
@@ -2159,4 +2161,7 @@ ISR(PCINT1_vect) {
 }
 ISR(PCINT2_vect) {
 	pcInt(2);
+}
+ISR(PCINT3_vect) {
+	pcInt(3);
 }

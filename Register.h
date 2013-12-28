@@ -223,7 +223,7 @@ static uint16_t regMcPtr[] = {
 //  if 'firstLoad' is defined, hm.init function will step in mainSettings function;
 //  be careful, whole eeprom block will be overwritten. you will loose your former settings...
 //- -----------------------------------------------------------------------------------------------------------------------
-//#define firstLoad;
+#define firstLoad;
 static void mainSettings(uint16_t *regPtr, uint16_t *peerPtr) {
 	static s_regs reg;
 	*regPtr = (uint16_t)&reg;
@@ -236,15 +236,15 @@ static void mainSettings(uint16_t *regPtr, uint16_t *peerPtr) {
 
 	
 	reg.ch_1.list1.dblPress = 2;
-	reg.ch_1.list1.sign = 1;
+	reg.ch_1.list1.sign = 0;
 	reg.ch_1.list1.longPress = 4;
 	
 	reg.ch_1.peer[0].peerNeedsBurst = 1;
-	reg.ch_1.peer[0].expectAES = 1;
+	reg.ch_1.peer[0].expectAES = 0;
 
 
-	peerdb[0][0] = 0x01086622;
-	peerdb[1][0] = 0x02086622;
+	peerdb[0][0] = 0x013BD621; // 21D63B
+	peerdb[1][0] = 0x013BD621;
 	
 }
 

@@ -465,13 +465,13 @@ char pHexL(uint8_t *buf, uint8_t len);
 char pTime(void);
 
 //- interrupt handling
-#define maxInt 10
+#define maxInt 11
 struct s_pci {
 	uint8_t	 nbr;
 	uint16_t idx[maxInt];
 	BK      *ptr[maxInt];
-	uint8_t *pAddr[3];
-	uint8_t  lPort[3];
+	uint8_t *pAddr[4];
+	uint8_t  lPort[4];
 } static pci;
 void pcInt(uint8_t iPort);
 static volatile uint8_t wd_flag;
@@ -479,6 +479,6 @@ ISR( WDT_vect );
 ISR(PCINT0_vect);
 ISR(PCINT1_vect);
 ISR(PCINT2_vect);
-
+ISR(PCINT3_vect);
 
 

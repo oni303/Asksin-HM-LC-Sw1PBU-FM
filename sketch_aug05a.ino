@@ -51,8 +51,10 @@ uint32_t nTimer;
 
 //- main functions --------------------------------------------------------------------------------------------------------
 void setup() {
-	Serial.begin(57600);														// starting serial messages
+	Serial.begin(57600);
 
+  														// starting serial messages
+        Serial << '\n\r\n\r' << F("Device starting up") << '\n\r';
 	// some power savings
 //	power_all_disable();														// all devices off
 //	power_timer0_enable();														// we need timer0 for delay function
@@ -71,7 +73,9 @@ void setup() {
 
 	// show help screen and config
 	showHelp();																	// shows help screen on serial console
-	showSettings();																// show device settings
+	showSettings();															// show device settings
+        Serial << F("Start up done") << '\n';
+        hm.sendPeerREMOTE(1,0,0);
 }
 
 void loop() {
@@ -161,14 +165,14 @@ void HM_Config_Changed(uint8_t cnl, uint8_t *data, uint8_t len) {
 	//Serial << "ch6: long:" << 300+(regMC.ch6.l1.longPress*100) << ", dbl:" << (regMC.ch6.l1.dblPress*100) << '\n';
 
 	// configure some buttons - config(tIdx, tPin, tTimeOutShortDbl, tLongKeyTime, tTimeOutLongDdbl, tCallBack)
-	bk[0].config(0,8,0,5000,5000,buttonState);									// button 0 for channel 0 for send pairing string, and double press for reseting device config
+	bk[0].config(0,15,0,5000,5000,buttonState);									// button 0 for channel 0 for send pairing string, and double press for reseting device config
 
-	bk[1].config(1,A0,(regMC.ch1.l1.dblPress*100),300+(regMC.ch1.l1.longPress*100),1000,buttonState); // channel 1 to 6 as push button
-	bk[2].config(2,A1,(regMC.ch2.l1.dblPress*100),300+(regMC.ch2.l1.longPress*100),1000,buttonState);
-	bk[3].config(3,A2,(regMC.ch3.l1.dblPress*100),300+(regMC.ch3.l1.longPress*100),1000,buttonState);
-	bk[4].config(4,A3,(regMC.ch4.l1.dblPress*100),300+(regMC.ch4.l1.longPress*100),1000,buttonState);
-	bk[5].config(5,A4,(regMC.ch5.l1.dblPress*100),300+(regMC.ch5.l1.longPress*100),1000,buttonState);
-	bk[6].config(6,A5,(regMC.ch6.l1.dblPress*100),300+(regMC.ch6.l1.longPress*100),1000,buttonState);
+	bk[1].config(1,14,(regMC.ch1.l1.dblPress*100),300+(regMC.ch1.l1.longPress*100),1000,buttonState); // channel 1 to 6 as push button
+	bk[2].config(2,8,(regMC.ch2.l1.dblPress*100),300+(regMC.ch2.l1.longPress*100),1000,buttonState);
+	//bk[3].config(3,A2,(regMC.ch3.l1.dblPress*100),300+(regMC.ch3.l1.longPress*100),1000,buttonState);
+	//bk[4].config(4,A3,(regMC.ch4.l1.dblPress*100),300+(regMC.ch4.l1.longPress*100),1000,buttonState);
+	//bk[5].config(5,A4,(regMC.ch5.l1.dblPress*100),300+(regMC.ch5.l1.longPress*100),1000,buttonState);
+	//bk[6].config(6,A5,(regMC.ch6.l1.dblPress*100),300+(regMC.ch6.l1.longPress*100),1000,buttonState);
 
 }
 
